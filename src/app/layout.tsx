@@ -35,8 +35,13 @@ export default function RootLayout({
               <ThemeToggle />
             </header>
             
-            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-              {children}
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col">
+              <div className="flex-1">
+                {children}
+              </div>
+              <footer className="mt-12 py-6 text-center text-sm text-muted-foreground">
+                Designed by <a href="https://www.alphaautomations.xyz/" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline transition-colors">AlphaAIAutomations</a>
+              </footer>
             </main>
           </div>
           <Toaster />
