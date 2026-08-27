@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingDown, TrendingUp, PiggyBank } from "lucide-react";
-import { transactionsRepo, accountsRepo } from "@/lib/repositories";
+import { transactionsRepo, accountsRepo, categoriesRepo } from "@/lib/repositories";
 import { DashboardCharts } from "@/components/DashboardCharts";
 
 export const dynamic = 'force-dynamic';
@@ -9,14 +9,17 @@ export default async function Dashboard() {
   let income: any[] = [];
   let expenses: any[] = [];
   let accounts: any[] = [];
+  let categories: any[] = [];
 
   try {
     const results = await Promise.all([
       transactionsRepo.getAll(),
-      accountsRepo.getAll()
+      accountsRepo.getAll(),
+      categoriesRepo.getAll()
     ]);
     const allTxs = results[0];
     accounts = results[1];
+    const categories = results[2];
     income = allTxs.filter((t: any) => t.type === "INCOME");
     expenses = allTxs.filter((t: any) => t.type === "EXPENSE");
   } catch(e) {
@@ -47,23 +50,91 @@ export default async function Dashboard() {
   const availableBalance = accounts.reduce((total, acc) => total + Number(acc.currentBalance || 0), 0);
   const currentMonthSavings = currentMonthIncome - currentMonthExpenses;
 
-  // Placeholder data for charts
-  const chartData = [
-    { name: 'Jan', income: 4500, expenses: 3200 },
-    { name: 'Feb', income: 4800, expenses: 3000 },
-    { name: 'Mar', income: 5200, expenses: 3800 },
-    { name: 'Apr', income: 4900, expenses: 3100 },
-    { name: 'May', income: 5500, expenses: 3500 },
-    { name: 'Jun', income: currentMonthIncome, expenses: currentMonthExpenses },
-  ];
+  
+  // Calculate historical chart data (last 6 months)
+  const chartData = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(currentYear, currentMonth - i, 1);
+    const monthName = d.toLocaleString('default', { month: 'short' });
+    const targetMonth = d.getMonth();
+    const targetYear = d.getFullYear();
+    
+    const mIncome = income.reduce((sum, t) => {
+      const td = new Date(t.date);
+      return (td.getMonth() === targetMonth && td.getFullYear() === targetYear) ? sum + Number(t.amount || 0) : sum;
+    }, 0);
+    
+    const mExpenses = expenses.reduce((sum, t) => {
+      const td = new Date(t.date);
+      return (td.getMonth() === targetMonth && td.getFullYear() === targetYear) ? sum + Number(t.amount || 0) : sum;
+    }, 0);
+    
+    chartData.push({ name: monthName, income: mIncome, expenses: mExpenses });
+  }
 
-  const categoryData = [
-    { name: 'Groceries', value: 850, color: '#10b981' },
-    { name: 'Rent', value: 2000, color: '#6366f1' },
-    { name: 'Shopping', value: 450, color: '#f43f5e' },
-    { name: 'Utilities', value: 300, color: '#f59e0b' },
-    { name: 'Entertainment', value: 400, color: '#8b5cf6' }
-  ];
+  // Calculate category donut data
+  const COLORS = ['#10b981', '#6366f1', '#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'];
+  const categoryTotals: Record<string, number> = {};
+  
+  expenses.forEach(t => {
+    const d = new Date(t.date);
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      const catName = categories.find((c: any) => c.id === t.categoryId)?.name || 'Uncategorized';
+      categoryTotals[catName] = (categoryTotals[catName] || 0) + Number(t.amount || 0);
+    }
+  });
+  
+  const categoryData = Object.keys(categoryTotals)
+    .map((name, index) => ({
+      name,
+      value: categoryTotals[name],
+      color: COLORS[index % COLORS.length]
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  // Generate Insights
+  let savingsRate = "0%";
+  let savingsMessage = "Keep track of your spending!";
+  if (currentMonthIncome > 0) {
+    const rate = Math.max(0, (currentMonthSavings / currentMonthIncome) * 100);
+    savingsRate = rate.toFixed(1) + "%";
+    if (rate >= 20) savingsMessage = "Excellent! You are saving above the recommended 20% rule.";
+    else if (rate > 0) savingsMessage = "Good start. Try to reach a 20% savings rate.";
+    else savingsMessage = "You spent more than you earned this month.";
+  }
+
+  let topExpenseName = "None";
+  let topExpenseMessage = "No expenses this month.";
+  if (categoryData.length > 0) {
+    topExpenseName = categoryData[0].name;
+    const percentage = ((categoryData[0].value / currentMonthExpenses) * 100).toFixed(0);
+    topExpenseMessage = `Accounting for ${percentage}% of your total monthly expenses.`;
+  }
+
+  // Variance: Compare current month expenses to last month
+  let variance = "₹0";
+  let varianceMessage = "No change from last month.";
+  if (chartData.length >= 2) {
+    const lastMonthEx = chartData[4].expenses; // index 4 is last month, index 5 is current
+    const diff = currentMonthExpenses - lastMonthEx;
+    if (diff > 0) {
+      variance = `+₹${diff.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      varianceMessage = `You spent more than last month.`;
+    } else {
+      variance = `-₹${Math.abs(diff).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      varianceMessage = `Great job! You spent less than last month.`;
+    }
+  }
+
+  const insights = {
+    savingsRate,
+    savingsMessage,
+    topExpenseName,
+    topExpenseMessage,
+    variance,
+    varianceMessage
+  };
+
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -127,7 +198,7 @@ export default async function Dashboard() {
         </Card>
       </div>
 
-      <DashboardCharts data={chartData} categoryData={categoryData} />
+      <DashboardCharts data={chartData} categoryData={categoryData} insights={insights} />
     </div>
   );
 }

@@ -17,7 +17,7 @@ import {
   Line
 } from "recharts";
 
-export function DashboardCharts({ data, categoryData }) {
+export function DashboardCharts({ data, categoryData, insights }: { data: any[], categoryData: any[], insights: any }) {
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
@@ -112,20 +112,20 @@ export function DashboardCharts({ data, categoryData }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
                 <div className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-1">Savings Rate</div>
-                <div className="text-2xl font-bold text-emerald-400">31.0%</div>
-                <div className="text-sm text-slate-300 mt-2">Excellent! You are saving above the recommended 20% rule.</div>
+                <div className="text-2xl font-bold text-emerald-400">{insights.savingsRate}</div>
+                <div className="text-sm text-slate-300 mt-2">{insights.savingsMessage}</div>
               </div>
               
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
                 <div className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-1">Top Expense</div>
-                <div className="text-2xl font-bold text-rose-400">Housing</div>
-                <div className="text-sm text-slate-300 mt-2">Accounting for 50% of your total monthly expenses.</div>
+                <div className="text-2xl font-bold text-rose-400">{insights.topExpenseName}</div>
+                <div className="text-sm text-slate-300 mt-2">{insights.topExpenseMessage}</div>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
                 <div className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-1">Variance</div>
-                <div className="text-2xl font-bold text-amber-400">+₹232.00</div>
-                <div className="text-sm text-slate-300 mt-2">You are slightly over budget in Travel this month.</div>
+                <div className="text-2xl font-bold text-amber-400">{insights.variance}</div>
+                <div className="text-sm text-slate-300 mt-2">{insights.varianceMessage}</div>
               </div>
             </div>
           </CardContent>
