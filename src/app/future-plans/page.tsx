@@ -14,7 +14,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function FuturePlansPage() {
-  let plans = [];
+  let plans: any[] = [];
   
   try {
     plans = await futurePlansRepo.getAll();

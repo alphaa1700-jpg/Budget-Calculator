@@ -17,8 +17,8 @@ import { ExpenseForm } from "@/components/forms/ExpenseForm";
 export const dynamic = 'force-dynamic';
 
 export default async function ExpensesPage() {
-  let transactions = [];
-  let categories = [];
+  let transactions: any[] = [];
+  let categories: any[] = [];
   
   try {
     const [txs, cats] = await Promise.all([

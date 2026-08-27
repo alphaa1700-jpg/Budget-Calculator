@@ -14,8 +14,8 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function AccountsPage() {
-  let accounts = [];
-  let transactions = [];
+  let accounts: any[] = [];
+  let transactions: any[] = [];
   
   try {
     const [accs, txs] = await Promise.all([

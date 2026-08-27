@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  let categories = [];
+  let categories: any[] = [];
   
   try {
     categories = await categoriesRepo.getAll();

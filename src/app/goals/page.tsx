@@ -15,7 +15,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function GoalsPage() {
-  let goals = [];
+  let goals: any[] = [];
   
   try {
     goals = await goalsRepo.getAll();

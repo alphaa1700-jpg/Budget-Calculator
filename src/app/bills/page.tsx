@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 export const dynamic = 'force-dynamic';
 
 export default async function BillsPage() {
-  let bills = [];
+  let bills: any[] = [];
   
   try {
     bills = await billsRepo.getAll();
