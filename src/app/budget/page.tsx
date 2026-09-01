@@ -15,7 +15,7 @@ export default async function BudgetPage() {
 
   // Aggregate current month transactions by category
   const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-  const currentMonthExpenses = transactions.filter(t => 
+  const currentMonthExpenses = ( || []).filter(t => 
     t.type === 'EXPENSE' && t.date.startsWith(currentMonth)
   );
 

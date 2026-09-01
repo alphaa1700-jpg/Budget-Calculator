@@ -51,12 +51,13 @@ const expenseSchema = z.object({
 export type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
+  initialData?: any;
   onSuccess?: () => void;
   categories?: { id: string; name: string }[];
   transactionType?: "EXPENSE" | "INCOME";
 }
 
-export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXPENSE" }: ExpenseFormProps) {
+export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXPENSE", initialData }: ExpenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Default mock categories if none provided yet
@@ -71,7 +72,7 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       amount: 0,
       description: "",
       merchant: "",
@@ -84,17 +85,21 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
   async function onSubmit(data: ExpenseFormValues) {
     setIsSubmitting(true);
     try {
-      const result = await createExpense({
-        ...data,
-        date: data.date.toISOString(),
-      });
+      let result;
+      const dataToSave = { ...data, date: data.date.toISOString() };
+      
+      if (initialData?.id) {
+        result = await updateRecord("Transactions", initialData.id, dataToSave);
+      } else {
+        result = await createRecord("Transactions", dataToSave);
+      }
       
       if (result.success) {
-        toast.success("Expense added successfully");
-        form.reset();
+        toast.success(initialData?.id ? "Updated successfully" : "Added successfully");
+        if (!initialData?.id) form.reset();
         if (onSuccess) onSuccess();
       } else {
-        toast.error(result.error || "Failed to add expense");
+        toast.error(result.error || "Failed");
       }
     } catch (error) {
       toast.error("An unexpected error occurred");

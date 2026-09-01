@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createRecord } from "@/app/actions";
+import { createRecord, updateRecord } from "@/app/actions";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,17 +21,22 @@ date: z.string(),
   notes: z.string().optional(),
 });
 
-export function GroceryForm({ onSuccess }: { onSuccess?: () => void }) {
+export function GroceryForm({ onSuccess, initialData }: { onSuccess?: () => void, initialData?: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema) });
+  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues: initialData || {} });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const result = await createRecord("Grocery", values);
+      let result;
+      if (initialData?.id) {
+        result = await updateRecord("Grocery", initialData.id, values);
+      } else {
+        result = await createRecord("Grocery", values);
+      }
       if (result.success) {
-        toast.success("Grocery saved!");
-        form.reset();
+        toast.success(initialData?.id ? "Updated successfully!" : "Saved successfully!");
+        if (!initialData?.id) form.reset();
         if (onSuccess) onSuccess();
       } else {
         toast.error("Error: " + result.error);
@@ -59,7 +64,7 @@ export function GroceryForm({ onSuccess }: { onSuccess?: () => void }) {
           <FormItem><FormLabel>Sub-Category</FormLabel><FormControl><Input placeholder="e.g. Meat/Produce" {...field} /></FormControl></FormItem>
         )} />
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save"}
+          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (initialData?.id ? "Update" : "Save")}
         </Button>
       </form>
     </Form>

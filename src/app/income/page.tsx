@@ -27,9 +27,9 @@ export default async function IncomePage() {
     ]);
     
     // Filter just to income
-    transactions = txs.filter(t => t.type === 'INCOME');
+    transactions = ( || []).filter(t => t.type === 'INCOME');
     // Sort descending by date
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    ( || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     categories = cats;
   } catch (error) {
@@ -112,7 +112,7 @@ export default async function IncomePage() {
                         +₹{Number(tx.amount).toFixed(2)}
                       </TableCell>
                       <TableCell>
-                        <DataTableActions sheetName="Transactions" recordId={tx.id} recordName="Income" />
+                        <DataTableActions sheetName="Transactions" recordId={tx.id} recordName="Income" editForm={<ExpenseForm initialData={tx} categories={categories} />} />
                       </TableCell>
                     </TableRow>
                   ))}

@@ -24,8 +24,8 @@ export default async function BillsPage() {
     console.error("Failed to load data:", error);
   }
 
-  const upcomingBills = bills.filter(b => b.status === "UNPAID");
-  const paidBills = bills.filter(b => b.status === "PAID");
+  const upcomingBills = ( || []).filter(b => b.status === "UNPAID");
+  const paidBills = ( || []).filter(b => b.status === "PAID");
   
   const upcomingTotal = upcomingBills.reduce((sum, b) => sum + Number(b.amount), 0);
 

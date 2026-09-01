@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createRecord } from "@/app/actions";
+import { createRecord, updateRecord } from "@/app/actions";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       name: "",
       type: "EXPENSE",
       status: "ACTIVE",
@@ -51,7 +51,7 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const result = await createRecord("Categories", {
+      const result = await createRecord, updateRecord("Categories", {
         ...values,
       });
 
@@ -67,7 +67,6 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }
 
   return (
     <Form {...form}>

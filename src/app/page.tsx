@@ -20,8 +20,8 @@ export default async function Dashboard() {
     const allTxs = results[0];
     accounts = results[1];
     const categories = results[2];
-    income = allTxs.filter((t: any) => t.type === "INCOME");
-    expenses = allTxs.filter((t: any) => t.type === "EXPENSE");
+    income = ( || []).filter((t: any) => t.type === "INCOME");
+    expenses = ( || []).filter((t: any) => t.type === "EXPENSE");
   } catch(e) {
     console.error(e);
   }
