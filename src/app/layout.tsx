@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MagicExpenseLogger } from "@/components/MagicExpenseLogger";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -35,6 +36,10 @@ export default function RootLayout({
               <ThemeToggle />
             </header>
             
+            <div className="hidden md:flex h-14 items-center justify-end border-b px-6 lg:h-[60px] bg-background gap-4">
+              <MagicExpenseLogger />
+              <ThemeToggle />
+            </div>
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col">
               <div className="flex-1">
                 {children}
