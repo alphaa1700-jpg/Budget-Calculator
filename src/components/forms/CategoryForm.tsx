@@ -34,9 +34,10 @@ const formSchema = z.object({
 
 interface CategoryFormProps {
   onSuccess?: () => void;
+  initialData?: any;
 }
 
-export function CategoryForm({ onSuccess }: CategoryFormProps) {
+export function CategoryForm({ onSuccess, initialData }: CategoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,13 +52,16 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const result = await createRecord, updateRecord("Categories", {
-        ...values,
-      });
+      let result;
+      if (initialData?.id) {
+        result = await updateRecord("Categories", initialData.id, values);
+      } else {
+        result = await createRecord("Categories", values);
+      }
 
       if (result.success) {
-        toast.success("Category created successfully!");
-        form.reset();
+        toast.success(initialData?.id ? "Category updated!" : "Category created successfully!");
+        if (!initialData?.id) form.reset();
         onSuccess?.();
       } else {
         toast.error(`Failed: ${result.error}`);
@@ -67,6 +71,7 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  }
 
   return (
     <Form {...form}>
@@ -114,7 +119,7 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
               Saving...
             </>
           ) : (
-            "Save Category"
+            initialData?.id ? "Update Category" : "Save Category"
           )}
         </Button>
       </form>

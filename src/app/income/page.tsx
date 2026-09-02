@@ -27,9 +27,9 @@ export default async function IncomePage() {
     ]);
     
     // Filter just to income
-    transactions = ( || []).filter(t => t.type === 'INCOME');
+    transactions = (txs || []).filter(t => t.type === 'INCOME');
     // Sort descending by date
-    ( || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    (transactions || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     categories = cats;
   } catch (error) {

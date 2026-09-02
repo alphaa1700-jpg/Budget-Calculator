@@ -27,9 +27,9 @@ export default async function ExpensesPage() {
     ]);
     
     // Filter just to expenses
-    transactions = ( || []).filter(t => t.type === 'EXPENSE');
+    transactions = (txs || []).filter(t => t.type === 'EXPENSE');
     // Sort descending by date
-    ( || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    (transactions || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     categories = cats;
   } catch (error) {
