@@ -33,8 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createExpense } from "@/app/actions";
-import { toast } from "sonner"; // Assuming sonner is installed
+import { createRecord, updateRecord } from "@/app/actions";
+import { toast } from "sonner"; 
 
 const expenseSchema = z.object({
   amount: z.coerce.number().positive("Amount must be greater than 0"),
@@ -45,7 +45,7 @@ const expenseSchema = z.object({
   description: z.string().optional(),
   merchant: z.string().optional(),
   type: z.enum(["EXPENSE", "INCOME"]),
-  accountId: z.string().default("default_account"), // Stub for now
+  accountId: z.string().default("default_account"), 
 });
 
 export type ExpenseFormValues = z.infer<typeof expenseSchema>;
@@ -60,7 +60,6 @@ interface ExpenseFormProps {
 export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXPENSE", initialData }: ExpenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Default mock categories if none provided yet
   const defaultCategories = categories.length > 0 ? categories : [
     { id: "cat-groceries", name: "Groceries" },
     { id: "cat-dining", name: "Dining Out" },
@@ -70,16 +69,24 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
     { id: "cat-entertainment", name: "Entertainment" },
   ];
 
+  // Parse the date properly to avoid format() crashes
+  const parsedDefaultValues = initialData ? {
+    ...initialData,
+    date: initialData.date ? new Date(initialData.date) : new Date(),
+    amount: Number(initialData.amount)
+  } : {
+    amount: 0,
+    description: "",
+    merchant: "",
+    categoryId: "",
+    type: transactionType,
+    accountId: "default_account",
+    date: new Date(),
+  };
+
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: initialData || {
-      amount: 0,
-      description: "",
-      merchant: "",
-      categoryId: "",
-      type: transactionType,
-      accountId: "default_account",
-    },
+    defaultValues: parsedDefaultValues,
   });
 
   async function onSubmit(data: ExpenseFormValues) {
@@ -112,7 +119,6 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         
-        {/* Amount Field */}
         <FormField
           control={form.control}
           name="amount"
@@ -132,7 +138,6 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
           )}
         />
 
-        {/* Date Field */}
         <FormField
           control={form.control}
           name="date"
@@ -149,7 +154,7 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
+                      {field.value && !isNaN(field.value.getTime()) ? (
                         format(field.value, "PPP")
                       ) : (
                         <span>Pick a date</span>
@@ -175,14 +180,13 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
           )}
         />
 
-        {/* Category Field */}
         <FormField
           control={form.control}
           name="categoryId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
@@ -192,6 +196,9 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
                   {defaultCategories.map(cat => (
                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                   ))}
+                  {!defaultCategories.some(c => c.id === field.value) && field.value && (
+                    <SelectItem value={field.value}>Unknown Category</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -200,7 +207,6 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
         />
         
         <div className="grid grid-cols-2 gap-4">
-          {/* Merchant Field */}
           <FormField
             control={form.control}
             name="merchant"
@@ -215,7 +221,6 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
             )}
           />
 
-          {/* Description Field */}
           <FormField
             control={form.control}
             name="description"
@@ -238,7 +243,7 @@ export function ExpenseForm({ onSuccess, categories = [], transactionType = "EXP
               Saving...
             </>
           ) : (
-            transactionType === "INCOME" ? "Save Income" : "Save Expense"
+            initialData?.id ? "Update Transaction" : (transactionType === "INCOME" ? "Save Income" : "Save Expense")
           )}
         </Button>
       </form>
